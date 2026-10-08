@@ -212,7 +212,7 @@ if (frame && matchMedia("(hover:hover) and (prefers-reduced-motion:no-preference
       fillBar.parentNode,
       function () {
         void fillBar.offsetWidth; /* commit the 0 width before animating */
-        fillBar.style.transition = "width 1.6s cubic-bezier(.22,1,.36,1) .15s";
+        fillBar.style.transition = "width 1.0s cubic-bezier(.22,1,.36,1) .10s";
         fillBar.style.width = target;
       },
       0.6,
@@ -235,7 +235,7 @@ if (frame && matchMedia("(hover:hover) and (prefers-reduced-motion:no-preference
         items.forEach(function (item) {
           var num = item.querySelector(".gn");
           var to = +num.dataset.to;
-          var duration = 1400;
+          var duration = 800;
           var start = null;
           function step(now) {
             if (start === null) start = now;
