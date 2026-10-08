@@ -1062,17 +1062,17 @@ footer {
   }
 }
 
-/* highlights: unit and description fade in after the number finishes counting */
-.hl .gpa .gd {
+/* "/ 4.0", "months", "project" and the highlight descriptions fade in after their number finishes */
+.gpa .gd {
   display: inline-block;
 }
-.hl .gpa .gd,
+.gpa .gd,
 .hl .gpa .gt {
   transition:
-    opacity 0.5s ease,
-    transform 0.5s ease;
+    opacity 0.45s ease,
+    transform 0.45s ease;
 }
-.hl .gpa.pre .gd,
+.gpa.pre .gd,
 .hl .gpa.pre .gt {
   opacity: 0;
   transform: translateY(0.5rem);
