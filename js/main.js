@@ -186,9 +186,14 @@ if (frame && matchMedia("(hover:hover) and (prefers-reduced-motion:no-preference
   });
 }
 
-/* Profile animations: CGPA bar fills, highlight numbers count up then their text fades in */
+/* Profile animations: CGPA bar + number, highlight numbers count up, then their text fades in */
 (function () {
   if (matchMedia("(prefers-reduced-motion:reduce)").matches) return; /* leave final state as-is */
+
+  /* ---- speed settings (milliseconds) ---- */
+  var BAR_MS = 1000; /* CGPA bar fill + CGPA number count */
+  var BAR_DELAY = 100; /* wait before the CGPA starts */
+  var COUNT_MS = 900; /* highlight numbers count-up */
 
   function whenVisible(el, fn, threshold) {
     if (!("IntersectionObserver" in window)) return fn();
@@ -203,17 +208,47 @@ if (frame && matchMedia("(hover:hover) and (prefers-reduced-motion:no-preference
     io.observe(el);
   }
 
-  /* CGPA bar: 0 -> its current width */
+  /* count a number element from 0 to its real value, then call done() */
+  function countUp(num, duration, delay, done) {
+    var to = +num.dataset.to;
+    var decimals = +num.dataset.dec;
+    var start = null;
+    function step(now) {
+      if (start === null) start = now + delay;
+      var p = Math.max(Math.min((now - start) / duration, 1), 0);
+      num.textContent = (to * (1 - Math.pow(1 - p, 4))).toFixed(decimals);
+      if (p < 1) requestAnimationFrame(step);
+      else if (done) done();
+    }
+    requestAnimationFrame(step);
+  }
+  function prepNumber(item) {
+    var num = item.querySelector(".gn");
+    var text = num.textContent.trim();
+    num.dataset.to = text;
+    num.dataset.dec = (text.split(".")[1] || "").length;
+    num.textContent = (0).toFixed(+num.dataset.dec);
+    item.classList.add("pre"); /* hides the text that fades in afterwards */
+    return num;
+  }
+
+  /* CGPA: bar fills and 0.00 -> 3.49 counts up together, then "/ 4.0" fades in */
   var fillBar = document.querySelector(".gbar i");
   if (fillBar) {
+    var cgpa = fillBar.closest(".gpa");
+    var cgpaNum = prepNumber(cgpa);
     var target = fillBar.style.width;
     fillBar.style.width = "0";
     whenVisible(
       fillBar.parentNode,
       function () {
         void fillBar.offsetWidth; /* commit the 0 width before animating */
-        fillBar.style.transition = "width 1.0s cubic-bezier(.22,1,.36,1) .10s";
+        fillBar.style.transition =
+          "width " + BAR_MS + "ms cubic-bezier(.22,1,.36,1) " + BAR_DELAY + "ms";
         fillBar.style.width = target;
+        countUp(cgpaNum, BAR_MS, BAR_DELAY, function () {
+          cgpa.classList.remove("pre");
+        });
       },
       0.6,
     );
@@ -223,28 +258,14 @@ if (frame && matchMedia("(hover:hover) and (prefers-reduced-motion:no-preference
   var hl = document.querySelector(".hl");
   if (hl) {
     var items = [].slice.call(hl.querySelectorAll(".gpa"));
-    items.forEach(function (item) {
-      var num = item.querySelector(".gn");
-      num.dataset.to = num.textContent;
-      num.textContent = "0";
-      item.classList.add("pre");
-    });
+    var nums = items.map(prepNumber);
     whenVisible(
       hl,
       function () {
-        items.forEach(function (item) {
-          var num = item.querySelector(".gn");
-          var to = +num.dataset.to;
-          var duration = 800;
-          var start = null;
-          function step(now) {
-            if (start === null) start = now;
-            var p = Math.min((now - start) / duration, 1);
-            num.textContent = Math.round(to * (1 - Math.pow(1 - p, 3)));
-            if (p < 1) requestAnimationFrame(step);
-            else item.classList.remove("pre"); /* triggers the fade-in */
-          }
-          requestAnimationFrame(step);
+        items.forEach(function (item, i) {
+          countUp(nums[i], COUNT_MS, 0, function () {
+            item.classList.remove("pre"); /* triggers the fade-in */
+          });
         });
       },
       0.5,
