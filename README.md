@@ -14,8 +14,6 @@ Static website (no build step). Open `index.html` through a web server, or publi
 1. Create a new repository and upload everything in this folder (keep `index.html` at the top level).
 2. Repository Settings > Pages > Source: "Deploy from a branch", branch `main`, folder `/ (root)`.
 3. Wait a minute, then open the address GitHub shows.
-4. In `index.html`, change the `og:image` line to the full address, for example
-   `https://YOURNAME.github.io/REPO/assets/images/og-image.jpg`, so link previews show your image.
 
 ## Notes
 - The YouTube video only plays on a real web address, not when `index.html` is opened from a folder.
