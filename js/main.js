@@ -185,3 +185,69 @@ if (frame && matchMedia("(hover:hover) and (prefers-reduced-motion:no-preference
     frame.style.removeProperty("--ry");
   });
 }
+
+/* Profile animations: CGPA bar fills, highlight numbers count up then their text fades in */
+(function () {
+  if (matchMedia("(prefers-reduced-motion:reduce)").matches) return; /* leave final state as-is */
+
+  function whenVisible(el, fn, threshold) {
+    if (!("IntersectionObserver" in window)) return fn();
+    var io = new IntersectionObserver(
+      function (entries) {
+        if (!entries[0].isIntersecting) return;
+        io.disconnect();
+        fn();
+      },
+      { threshold: threshold },
+    );
+    io.observe(el);
+  }
+
+  /* CGPA bar: 0 -> its current width */
+  var fillBar = document.querySelector(".gbar i");
+  if (fillBar) {
+    var target = fillBar.style.width;
+    fillBar.style.width = "0";
+    whenVisible(
+      fillBar.parentNode,
+      function () {
+        void fillBar.offsetWidth; /* commit the 0 width before animating */
+        fillBar.style.transition = "width 1.6s cubic-bezier(.22,1,.36,1) .15s";
+        fillBar.style.width = target;
+      },
+      0.6,
+    );
+  }
+
+  /* Highlights: count from 0 to the real number, then fade in the text after it */
+  var hl = document.querySelector(".hl");
+  if (hl) {
+    var items = [].slice.call(hl.querySelectorAll(".gpa"));
+    items.forEach(function (item) {
+      var num = item.querySelector(".gn");
+      num.dataset.to = num.textContent;
+      num.textContent = "0";
+      item.classList.add("pre");
+    });
+    whenVisible(
+      hl,
+      function () {
+        items.forEach(function (item) {
+          var num = item.querySelector(".gn");
+          var to = +num.dataset.to;
+          var duration = 1400;
+          var start = null;
+          function step(now) {
+            if (start === null) start = now;
+            var p = Math.min((now - start) / duration, 1);
+            num.textContent = Math.round(to * (1 - Math.pow(1 - p, 3)));
+            if (p < 1) requestAnimationFrame(step);
+            else item.classList.remove("pre"); /* triggers the fade-in */
+          }
+          requestAnimationFrame(step);
+        });
+      },
+      0.5,
+    );
+  }
+})();
