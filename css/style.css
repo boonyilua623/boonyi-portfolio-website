@@ -1061,3 +1061,19 @@ footer {
     scroll-behavior: auto;
   }
 }
+
+/* highlights: unit and description fade in after the number finishes counting */
+.hl .gpa .gd {
+  display: inline-block;
+}
+.hl .gpa .gd,
+.hl .gpa .gt {
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+.hl .gpa.pre .gd,
+.hl .gpa.pre .gt {
+  opacity: 0;
+  transform: translateY(0.5rem);
+}
